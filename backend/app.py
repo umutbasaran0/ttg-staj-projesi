@@ -2,7 +2,8 @@
 Endpoint'ler:
   GET / -> Tum filmleri (year, title) yila göre artan sirali dondurur (Gorev 10)
   GET /movies?year=X -> Belirli yila ait filmleri dondurur (Gorev 11)
-
+  POST /movies -> Yeni film ekler, body: year, title (Gorev 12)
+  
 """
 
 from flask import Flask, jsonify, request
@@ -52,6 +53,40 @@ def get_movies():
     conn.close()
     return jsonify([dict(row) for row in rows])
 
+# Görev 12: Film ekle
+@app.route("/movies", methods=["POST"])
+def add_movie():
+    # Veri paketini al
+    data = request.get_json(silent=True)
+    
+    # Veri gönderilmemişse uyar
+    if not data:
+        return jsonify({"error": "JSON govdesi bekleniyor."}), 400
+
+    year = data.get("year")
+    title = data.get("title")
+
+    # Yıl veya başlık eksikse uyar
+    if year is None or not title:
+        return jsonify({"error": "'year' ve 'title' alanlari zorunludur."}), 400
+
+    # Yıl sayı formatında değilse uyar 
+    try:
+        year_int = int(year)
+    except (ValueError, TypeError):
+        return jsonify({"error": "'year' sayisal bir değer olmalidir."}), 400
+
+    # Veritabanına bağlan ve kaydet
+    conn = get_connection()
+    cur = conn.execute(
+        "INSERT INTO movies (year, title) VALUES (?, ?)", (year_int, title)
+    )
+    conn.commit() 
+    new_id = cur.lastrowid # ID numarasını al
+    conn.close()
+
+    # İşlem başarılıysa eklenen filmi ve 201 kodunu geri dön
+    return jsonify({"id": new_id, "year": year_int, "title": title}), 201
 
 if __name__ == "__main__":
     init_db()
