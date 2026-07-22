@@ -3,7 +3,8 @@ Endpoint'ler:
   GET / -> Tum filmleri (year, title) yila göre artan sirali dondurur (Gorev 10)
   GET /movies?year=X -> Belirli yila ait filmleri dondurur (Gorev 11)
   POST /movies -> Yeni film ekler, body: year, title (Gorev 12)
-  
+  DELETE /movies?year=X -> Query param ile o yildaki filmleri siler (Gorev 13)
+
 """
 
 from flask import Flask, jsonify, request
@@ -74,7 +75,7 @@ def add_movie():
     try:
         year_int = int(year)
     except (ValueError, TypeError):
-        return jsonify({"error": "'year' sayisal bir değer olmalidir."}), 400
+        return jsonify({"error": "'year' sayisal bir deger olmalidir."}), 400
 
     # Veritabanına bağlan ve kaydet
     conn = get_connection()
@@ -87,6 +88,46 @@ def add_movie():
 
     # İşlem başarılıysa eklenen filmi ve 201 kodunu geri dön
     return jsonify({"id": new_id, "year": year_int, "title": title}), 201
+
+# Görev 13: Query param ile film silme
+@app.route("/movies", methods=["DELETE"])
+def delete_movies_by_query():
+    # ?year= değerini al
+    year = request.args.get("year")
+    
+    # Yıl belirtilmemişse işlemi reddet
+    if year is None:
+        return jsonify({"error": "'year' query parametresi zorunludur."}), 400
+
+    # Değer sayı mı 
+    try:
+        year_int = int(year)
+    except ValueError:
+        return jsonify({"error": "'year' sayisal bir deger olmalidir."}), 400
+
+    conn = get_connection()
+
+    # Hangi filmler silinecek
+    to_delete = conn.execute(
+        "SELECT title FROM movies WHERE year = ?", (year_int,)
+    ).fetchall()
+    deleted_titles = [row["title"] for row in to_delete]
+
+    # Sil
+    conn.execute("DELETE FROM movies WHERE year = ?", (year_int,))
+    conn.commit()
+    conn.close()
+
+    # Hiç film bulunamadıysa
+    if not deleted_titles:
+        return jsonify({"message": f"{year_int} yilina ait film bulunamadi."}), 404
+
+    # Başarıyla silindiyse
+    return jsonify({
+        "message": f"{len(deleted_titles)} film silindi.",
+        "year": year_int,
+        "deleted_titles": deleted_titles
+    })
 
 if __name__ == "__main__":
     init_db()
