@@ -4,7 +4,9 @@ Endpoint'ler:
   GET /movies?year=X -> Belirli yila ait filmleri dondurur (Gorev 11)
   POST /movies -> Yeni film ekler, body: year, title (Gorev 12)
   DELETE /movies?year=X -> Query param ile o yildaki filmleri siler (Gorev 13)
-
+  DELETE /movies/<year> -> Path param ile o yildaki filmleri siler (Gorev 14)
+  GET /search?title=X -> title alaninda LIKE ile arama yapar (Gorev 15)
+  
 """
 
 from flask import Flask, jsonify, request
@@ -128,6 +130,51 @@ def delete_movies_by_query():
         "year": year_int,
         "deleted_titles": deleted_titles
     })
+
+# Görev 14: Path param ile film silme
+@app.route("/movies/<int:year>", methods=["DELETE"])
+def delete_movies_by_path(year):
+    conn = get_connection()
+
+    # Hangi filmler silinecek
+    to_delete = conn.execute(
+        "SELECT title FROM movies WHERE year = ?", (year,)
+    ).fetchall()
+    deleted_titles = [row["title"] for row in to_delete]
+
+    # Sil
+    conn.execute("DELETE FROM movies WHERE year = ?", (year,))
+    conn.commit()
+    conn.close()
+
+    # Hiç film bulunamadıysa
+    if not deleted_titles:
+        return jsonify({"message": f"{year} yilina ait film bulunamadi."}), 404
+
+    # Başarıyla silindiyse
+    return jsonify({
+        "message": f"{len(deleted_titles)} film silindi.",
+        "year": year,
+        "deleted_titles": deleted_titles
+    })
+
+# Görev 15: Film ara
+@app.route("/search", methods=["GET"])
+def search_movies():
+    # Aranacak kelimeyi al
+    title = request.args.get("title", "")
+
+    conn = get_connection()
+    # LIKE ve % ile kısmi metin araması yap
+    rows = conn.execute(
+        "SELECT id, year, title FROM movies WHERE title LIKE ? ORDER BY year ASC",
+        (f"%{title}%",),
+    ).fetchall()
+    conn.close()
+
+    return jsonify([dict(row) for row in rows])
+
+
 
 if __name__ == "__main__":
     init_db()
