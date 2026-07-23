@@ -10,9 +10,11 @@ Endpoint'ler:
 """
 
 from flask import Flask, jsonify, request
+from flask_cors import CORS
 from database import get_connection, init_db
 
 app = Flask(__name__)
+CORS(app)
 
 # Görev 10: Filmleri listele
 @app.route("/", methods=["GET"])
