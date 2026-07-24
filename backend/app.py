@@ -23,7 +23,7 @@ def list_movies():
     conn = get_connection()
     # Filmleri yıla göre sırala
     rows = conn.execute(
-        "SELECT year, title FROM movies ORDER BY year ASC"
+        "SELECT id, year, title FROM movies ORDER BY year ASC"
     ).fetchall()
     conn.close()
     return jsonify([dict(row) for row in rows])
