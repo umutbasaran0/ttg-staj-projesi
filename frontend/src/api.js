@@ -6,4 +6,9 @@ const api = axios.create({
 
 export const getMovies = () => api.get("/");
 
+export const searchMovies = (title) =>
+  api.get("/search", { params: { title } });
+
+export const addMovie = (movie) => api.post("/movies", movie);
+
 export default api;
