@@ -2,6 +2,7 @@ import { useState } from "react";
 import { DatePicker, Table, Button, Input, Modal, Form, message, Space } from "antd";
 import { getMovies, searchMovies, addMovie, updateMovie } from "./api";
 import dayjs from "dayjs";
+import * as XLSX from "xlsx";
 
 function App() {
   const [movies, setMovies] = useState([]);
@@ -74,6 +75,23 @@ function App() {
       });
   };
 
+  const exportData = (type) => {
+    if (movies.length === 0) {
+      message.warning("Dışa aktarılacak film bulunamadı.");
+      return;
+    }
+    const rows = movies.map(({ year, title }) => ({ Yıl: year, Başlık: title }));
+    const worksheet = XLSX.utils.json_to_sheet(rows);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Filmler");
+
+    if (type === "csv") {
+      XLSX.writeFile(workbook, "filmler.csv", { bookType: "csv" });
+    } else {
+      XLSX.writeFile(workbook, "filmler.xlsx", { bookType: "xlsx" });
+    }
+  };
+
   const columns = [
     { title: "Yıl", dataIndex: "year", key: "year" },
     { title: "Başlık", dataIndex: "title", key: "title" },
@@ -107,6 +125,8 @@ function App() {
         <Button type="primary" onClick={openAddModal}>
           Ekle
         </Button>
+        <Button onClick={() => exportData("csv")}>CSV İndir</Button>
+        <Button onClick={() => exportData("xlsx")}>Excel İndir</Button>
       </div>
 
       <Table columns={columns} dataSource={movies} loading={loading} />
