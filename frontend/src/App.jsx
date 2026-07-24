@@ -14,6 +14,7 @@ function App() {
   const mapToTableData = (data) =>
     data.map((movie, index) => ({ ...movie, key: movie.id ?? index }));
 
+  // Gorev 18: Yukle butonuna basilinca tum filmleri getirir
   const handleLoad = () => {
     setLoading(true);
     getMovies()
@@ -22,6 +23,7 @@ function App() {
       .finally(() => setLoading(false));
   };
 
+  // Gorev 19: Arama kutusuna yazilan kelimeye gore cagirir
   const handleSearch = (title) => {
     if (!title) {
       handleLoad();
@@ -34,12 +36,14 @@ function App() {
       .finally(() => setLoading(false));
   };
 
+  // Gorev 20: Ekle butonuna basilinca formu temizler
   const openAddModal = () => {
     setEditingMovie(null);
     form.resetFields();
     setIsModalOpen(true);
   };
 
+  // Gorev 21: Guncelle butonuna basilinca secilen filmin bilgilerini doldurur
   const openEditModal = (movie) => {
     setEditingMovie(movie);
     form.setFieldsValue({
@@ -49,13 +53,14 @@ function App() {
     setIsModalOpen(true);
   };
 
+  // Ekle ve Guncelle butonuna basilinca calisir
   const handleModalOk = () => {
     form
       .validateFields()
       .then((values) => {
         const payload = {
           title: values.title,
-          year: values.year.year(),
+          year: values.year.year(), 
         };
 
         if (editingMovie) {
@@ -75,6 +80,7 @@ function App() {
       });
   };
 
+  // Gorev 22: CSV veya Excel olarak indir
   const exportData = (type) => {
     if (movies.length === 0) {
       message.warning("Dışa aktarılacak film bulunamadı.");
@@ -92,6 +98,7 @@ function App() {
     }
   };
 
+  // Tablo sutunlari
   const columns = [
     { title: "Yıl", dataIndex: "year", key: "year" },
     { title: "Başlık", dataIndex: "title", key: "title" },
