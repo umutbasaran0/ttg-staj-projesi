@@ -6,6 +6,7 @@ Endpoint'ler:
   DELETE /movies?year=X -> Query param ile o yildaki filmleri siler (Gorev 13)
   DELETE /movies/<year> -> Path param ile o yildaki filmleri siler (Gorev 14)
   GET /search?title=X -> title alaninda LIKE ile arama yapar (Gorev 15)
+  PUT /movies -> Mevcut filmi gunceller, body: id, year, title (Gorev 21)
   
 """
 
@@ -176,6 +177,38 @@ def search_movies():
 
     return jsonify([dict(row) for row in rows])
 
+# Görev 21: Film güncelle
+@app.route("/movies", methods=["PUT"])
+def update_movie():
+    data = request.get_json(silent=True)
+    if not data or "id" not in data:
+        return jsonify({"error": "Guncelleme icin 'id' alani zorunludur."}), 400
+
+    movie_id = data.get("id")
+    year = data.get("year")
+    title = data.get("title")
+
+    if year is None or not title:
+        return jsonify({"error": "'year' ve 'title' alanlari zorunludur."}), 400
+
+    conn = get_connection()
+
+    # Film gercekten var mi
+    existing = conn.execute(
+        "SELECT id FROM movies WHERE id = ?", (movie_id,)
+    ).fetchone()
+    if not existing:
+        conn.close()
+        return jsonify({"error": f"id={movie_id} ile film bulunamadi."}), 404
+
+    conn.execute(
+        "UPDATE movies SET year = ?, title = ? WHERE id = ?",
+        (year, title, movie_id),
+    )
+    conn.commit()
+    conn.close()
+
+    return jsonify({"id": movie_id, "year": year, "title": title})
 
 
 if __name__ == "__main__":
