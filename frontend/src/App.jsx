@@ -1,15 +1,17 @@
 import { useState } from "react";
-import { DatePicker, Table, Button, Input, Modal, Form, message } from "antd";
-import { getMovies, searchMovies, addMovie } from "./api";
+import { DatePicker, Table, Button, Input, Modal, Form, message, Space } from "antd";
+import { getMovies, searchMovies, addMovie, updateMovie } from "./api";
 import dayjs from "dayjs";
 
 function App() {
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingMovie, setEditingMovie] = useState(null);
   const [form] = Form.useForm();
 
-  const mapToTableData = (data) => data.map((movie, index) => ({ ...movie, key: index }));
+  const mapToTableData = (data) =>
+    data.map((movie, index) => ({ ...movie, key: movie.id ?? index }));
 
   const handleLoad = () => {
     setLoading(true);
@@ -20,7 +22,7 @@ function App() {
   };
 
   const handleSearch = (title) => {
-    if(!title){
+    if (!title) {
       handleLoad();
       return;
     }
@@ -32,35 +34,60 @@ function App() {
   };
 
   const openAddModal = () => {
+    setEditingMovie(null);
     form.resetFields();
     setIsModalOpen(true);
   };
 
-  const handleAddOk = () => {
+  const openEditModal = (movie) => {
+    setEditingMovie(movie);
+    form.setFieldsValue({
+      title: movie.title,
+      year: dayjs(String(movie.year), "YYYY"),
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleModalOk = () => {
     form
       .validateFields()
       .then((values) => {
         const payload = {
           title: values.title,
-          year: values.year.year(), 
+          year: values.year.year(),
         };
+
+        if (editingMovie) {
+          return updateMovie({ id: editingMovie.id, ...payload });
+        }
         return addMovie(payload);
       })
       .then(() => {
-        message.success("Film eklendi.");
+        message.success(editingMovie ? "Film guncellendi." : "Film eklendi.");
         setIsModalOpen(false);
-        handleLoad(); 
+        handleLoad();
       })
       .catch((err) => {
-        if (err?.errorFields) return; 
-        console.error("Ekleme sirasinda hata:", err);
-        message.error("Film eklenirken bir hata olustu.");
+        if (err?.errorFields) return;
+        console.error("Islem sirasinda hata:", err);
+        message.error("Bir hata olustu.");
       });
   };
 
   const columns = [
     { title: "Yıl", dataIndex: "year", key: "year" },
     { title: "Başlık", dataIndex: "title", key: "title" },
+    {
+      title: "İşlemler",
+      key: "actions",
+      render: (_, record) => (
+        <Space>
+          <Button size="small" onClick={() => openEditModal(record)}>
+            Güncelle
+          </Button>
+        </Space>
+      ),
+    },
   ];
 
   return (
@@ -85,11 +112,11 @@ function App() {
       <Table columns={columns} dataSource={movies} loading={loading} />
 
       <Modal
-        title="Yeni Film Ekle"
+        title={editingMovie ? "Filmi Güncelle" : "Yeni Film Ekle"}
         open={isModalOpen}
-        onOk={handleAddOk}
+        onOk={handleModalOk}
         onCancel={() => setIsModalOpen(false)}
-        okText="Ekle"
+        okText={editingMovie ? "Güncelle" : "Ekle"}
         cancelText="Vazgeç"
       >
         <Form form={form} layout="vertical">

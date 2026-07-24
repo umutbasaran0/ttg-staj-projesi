@@ -11,4 +11,6 @@ export const searchMovies = (title) =>
 
 export const addMovie = (movie) => api.post("/movies", movie);
 
+export const updateMovie = (movie) => api.put("/movies", movie);
+
 export default api;
