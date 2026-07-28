@@ -11,6 +11,8 @@ Proje üç bölümden oluşuyor, üçü de tamamlandı: **Python temelleri**,
 python_basics/   -> Görev 2-7: sayı filtreleme, faktöriyel, regex'ler, tire ekleme
 backend/          -> Görev 8-15, 21: Flask + SQLite REST API
 frontend/         -> Görev 16-22: React + Vite + Ant Design
+fastapi_backend/    -> Görev 23: Ayni API'nin FastAPI ile yeniden yazilmis hali
+go_backend/         -> Görev 24: Ayni API'nin Go ile yeniden yazilmis hali
 ```
 
 ## Python Görevleri Nasıl Çalıştırılır
@@ -113,9 +115,62 @@ Uygulama `http://localhost:5173` adresinde açılır.
 - `node_modules/` ve `dist/` `.gitignore` ile hariç tutuldu, GitHub'a
   yüklenmedi — `npm install` ile herkes kendi ortamını kurabilir.
 
+
+## Ek Çalışmalar
+
+Aynı Movies API, iki farklı teknolojiyle yeniden yazıldı. Her ikisi de
+Flask sürümüyle birebir aynı endpoint yapısını kullanıyor, bu sayede
+React frontend'i sadece `baseURL` değiştirilerek her üçüyle de
+çalışacak şekilde tasarlandı.
+ 
+### FastAPI (Görev 23)
+ 
+Aynı REST API'nin FastAPI ile yeniden yazılmış hali `fastapi_backend/`
+klasöründe. Çalıştırmak için:
+
+```bash
+cd fastapi_backend
+python -m venv venv
+venv\Scripts\activate        # Windows
+pip install -r requirements.txt
+uvicorn main:app --reload --port 8000
+```
+ 
+Sunucu `http://127.0.0.1:8000` adresinde çalışır.
+ 
+Otomatik oluşan dokümantasyon (Swagger UI): `http://127.0.0.1:8000/docs`
+— her endpoint buradan "Try it out" ile Postman'e gerek kalmadan test
+edilebilir.
+
+### Go (Görev 24)
+ 
+Aynı REST API'nin Go (yalnızca standart kütüphane kullanılarak)
+yeniden yazılmış hali `go_backend/` klasöründe. Çalıştırmak için:
+ 
+```bash
+cd go_backend
+go run main.go
+```
+ 
+Sunucu `http://127.0.0.1:8002` adresinde çalışır ve başlangıçta 5 örnek
+film (`seedData`) ile otomatik doluyor, ekstra veri eklemeye gerek kalmadan
+test edilebilir.
+
+Derleyip `.exe` olarak da çalıştırılabilir:
+```bash
+go build -o movies-api.exe main.go
+.\movies-api.exe
+```
+
+Her iki backend de Postman ile uçtan uca test edildi (GET, POST, PUT,
+DELETE, hata durumları). 
+
 ## Genel Notlar
 
 - Tüm Python scriptleri ve backend endpoint'leri Postman ile ayrı ayrı
   test edildi.
 - Frontend, backend ile birlikte çalıştırılıp tüm özellikler (yükleme,
   arama, ekleme, güncelleme, dışa aktarma) uçtan uca test edildi.
+- FastAPI ve Go backend'leri Postman ile ayrı ayrı test edildi; endpoint 
+  yapıları Flask sürümüyle birebir aynı olduğu için React frontend'i baseURL 
+  değiştirilerek bunlarla da çalışacak şekilde tasarlandı.
