@@ -9,10 +9,10 @@ Proje üç bölümden oluşuyor, üçü de tamamlandı: **Python temelleri**,
 
 ```
 python_basics/   -> Görev 2-7: sayı filtreleme, faktöriyel, regex'ler, tire ekleme
-backend/          -> Görev 8-15, 21: Flask + SQLite REST API
-frontend/         -> Görev 16-22: React + Vite + Ant Design
-fastapi_backend/    -> Görev 23: Ayni API'nin FastAPI ile yeniden yazilmis hali
-go_backend/         -> Görev 24: Ayni API'nin Go ile yeniden yazilmis hali
+backend/         -> Görev 8-15, 21: Flask + SQLite REST API
+frontend/        -> Görev 16-22: React + Vite + Ant Design
+fastapi_backend/ -> Görev 23: Ayni API'nin FastAPI ile yeniden yazilmis hali
+go_backend/      -> Görev 24: Ayni API'nin Go ile yeniden yazilmis hali
 ```
 
 ## Python Görevleri Nasıl Çalıştırılır
